@@ -1,0 +1,13 @@
+{:paths ["src"]
+
+ :deps
+ {org.clojure/clojure {:mvn/version "1.11.1"}
+
+  ;; http client
+  clj-http/clj-http                   {:mvn/version "3.12.3"}
+  cheshire/cheshire                   {:mvn/version "5.11.0"}
+  camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.3"}
+
+  ;; xchange
+  org.knowm.xchange/xchange-core     {:mvn/version "5.0.13"}
+  org.knowm.xchange/xchange-bitflyer {:mvn/version "5.0.13"}}}

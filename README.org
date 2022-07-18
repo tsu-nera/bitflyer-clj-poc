@@ -1,6 +1,11 @@
 #+title: bitflyer-clj-poc
 
-bitFlyer for Clojure(PoC). 
+bitFlyer API wrapper with Clojure(PoC). 
 
-ref. https://github.com/tsu-nera/oanda-forex-clj
+- refs.
+  - https://github.com/tsu-nera/oanda-forex-clj
+    - ClojureによるOANDA Forex APIの実験
+  - [[https://futurismo.biz/archives/6401/][pybitflyer をつかって Python で ビットコインレートを取得してみた | Futurismo]]
+    - pybitflyerによる情報取得
+
 
