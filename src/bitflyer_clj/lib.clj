@@ -32,7 +32,7 @@
     {:ask ask :bid bid :spread spread}))
 
 (defn buy-market-order [amount price]
-  (api/create-order "MARKET" "BUY" amount price))
+  (api/create-order "MARKET" "BUY" amount))
 
 (defn sell-market-order [amount price]
   (api/create-order "MARKET" "SELL" amount price))
@@ -61,11 +61,9 @@
 
   (def asks (:asks order-book))
   (count asks)
-  (->limit-price bids)
-  )
+  (->limit-price asks)
 
-(comment
-
-  (def sample-ask (->limit-price asks))
-  (def resp (buy-limit-order lot sample-ask))
+  ;;
+  (def sample-bid (->limit-price bids))
+  (def resp (buy-limit-order lot sample-bid))
   )

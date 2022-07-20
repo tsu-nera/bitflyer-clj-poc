@@ -20,8 +20,6 @@
       "entry"
       "not entry"))
 
-  (def tick )
-
   )
 
 (comment

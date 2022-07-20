@@ -3,12 +3,13 @@
    [bitflyer-clj.tool :as tool]
    [camel-snake-kebab.core :as csk]
    [camel-snake-kebab.extras :as cske]
+   [cheshire.core :refer [generate-string]]
    [clj-http.client :as client])
   (:import
    (java.time
     Instant)))
 
-(def product-code "FX_BTC_JPY")
+(def product-code "BTCJPY22JUL2022")
 (def base-params {"product_code" product-code})
 
 (def base-url "https://api.bitflyer.com")
@@ -18,17 +19,24 @@
 (def creds (tool/load-edn creds-file))
 
 (defn ->timestamp []
-  (.getEpochSecond (Instant/now)))
+  (.toString (.getEpochSecond (Instant/now))))
 
-(defn ->access-sign [timestamp method path]
-  (let [secret (:api-secret creds)
-        text   (str timestamp method path)]
-    (tool/sign secret text)))
+(defn ->signature-text
+  [timestamp method path & {:as params}]
+  (cond-> (str timestamp method path)
+    params (str (generate-string params))))
 
-(defn ->signed-headers [method path body]
+(defn ->access-sign
+  [timestamp method path & {:as params}]
+  (let [key  (:api-secret creds)
+        text (->signature-text timestamp method path params)]
+    (println text)
+    (tool/sign key text)))
+
+(defn ->signed-headers [method path & {:as params}]
   (let [key       (:api-key creds)
         timestamp (->timestamp)
-        sign      (->access-sign timestamp method path)]
+        sign      (->access-sign timestamp method path params)]
     {"ACCESS-KEY"       key
      "ACCESS-TIMESTAMP" timestamp
      "ACCESS-SIGN"      sign}))
@@ -44,12 +52,28 @@
            (cske/transform-keys csk/->kebab-case)))))
 
 (defn get-private [path]
-  (let [headers (->signed-headers "GET" path nil)
+  (let [headers (->signed-headers "GET" path)
         url     (->url path)]
     (when-let [resp (client/get url
                                 {:headers       headers
                                  :as            :json
+                                 :content-type  :json
+                                 :debug         true
                                  :cookie-policy :standard})]
+      (->> resp
+           :body
+           (cske/transform-keys csk/->kebab-case)))))
+
+(defn post-private [path params]
+  (let [headers (->signed-headers "POST" path params)
+        url     (->url path)
+        body    (generate-string params)]
+    (when-let [resp (client/post url
+                                 {:headers       headers
+                                  :body          body
+                                  :content-type  :json
+                                  :accept        :json
+                                  :cookie-policy :standard})]
       (->> resp
            :body
            (cske/transform-keys csk/->kebab-case)))))
@@ -69,7 +93,6 @@
   (get-public "/v1/ticker"))
 #_(fetch-tick)
 
-;; 何度も叩くと取得できる. よくわからない...
 (defn fetch-balance
   "資産残高を取得"
   []
@@ -83,13 +106,13 @@
 #_(fetch-collateral)
 
 (defn create-order [type side amount price]
-  (let [url          (->url "/me/sendchildorder")
-        query-params (merge base-params
-                            {"child_order_type" type
-                             "side"             side
-                             "size"             amount
-                             "price"            price})]
-    query-params))
+  (let [path   "/v1/me/sendchildorder"
+        params {"product_code"     product-code
+                "child_order_type" type
+                "side"             side
+                "size"             amount
+                "price"            price}]
+    (post-private path params)))
 
 (defn cancel-order [id symbol & params])
 
@@ -103,7 +126,16 @@
 
 (comment
 
-  (def ts (->timestamp))
-  (->access-sign ts "GET" "/v1/me/getbalance")
+  (def method "GET")
+  (def path "/v1/me/getbalance")
+  ;; (def path "/v1/me/getcollateral")
+  (def headers (->signed-headers method path))
+  (def url (->url path))
 
+  (-> (client/get url
+                  {:headers       headers
+                   :as            :json
+                   :content-type  :json
+                   :cookie-policy :standard})
+      :body)
   )
