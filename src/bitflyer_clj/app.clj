@@ -1,58 +1,27 @@
 (ns bitflyer-clj.app
   (:require
-   [bitflyer-clj.api :as api]
-   [chime.core :as chime])
-  (:import
-   (java.time
-    Duration
-    Instant)))
+   [bitflyer-clj.lib :as lib]))
 
-(def app (atom nil))
+(def position (atom "none"))
 
-(defn start []
-  (println "Bot started.")
-  (deref @app))
+(def spread-entry 0.0005)
+(def spread-cancel 0.0003)
 
-(defn stop []
-  (.close @@app))
+(defn exec-none->entry! []
+  (let [{:keys [spread ask bid]} (lib/get-eff-tick)]
+    (if (> spread))
+    (println ask bid)))
+
+(defn exec-entry->none! []
+  (println "entry to none")
+  (println (lib/get-eff-tick)))
+
+(defn update-position [current]
+  (if (= current "none")
+    "entry"
+    "none"))
 
 (defn exec [time]
-  (println (api/fetch-tick)))
-
-(defn- make-interval-seq [times interval]
-  (let [now (Instant/now)]
-    (->> (range 1 (+ 1 times))
-         (map #(* interval %))
-         (map (fn [x] (.plusSeconds now x)))
-         (into []))))
-
-(defn- make-periodic-seq [interval]
-  (chime/periodic-seq
-   (Instant/now)
-   (Duration/ofSeconds interval)))
-
-(defn init []
-  (reset! app
-          (delay (chime/chime-at
-                  (make-periodic-seq 3)
-                  exec
-                  {:on-finished
-                   (fn []
-                     (println "Bot finished."))}))))
-
-(comment
-  (init)
-  (start)
-  (stop)
-  )
-
-(comment
-  (def state
-    (atom (-> (chime/periodic-seq
-               (Instant/now)
-               (Duration/ofSeconds 3))
-              exec)))
-
-  (.close @state)
-
-  )
+  (if (= @position "none")
+    (exec-none->entry!)
+    (exec-entry->none!)))
