@@ -7,11 +7,14 @@
     Duration
     Instant)))
 
+(def app (atom nil))
+
 (defn start []
-  (println "Bot started."))
+  (println "Bot started.")
+  (deref @app))
 
 (defn stop []
-  (println "Bot finished."))
+  (.close @@app))
 
 (defn exec [time]
   (println (api/fetch-tick)))
@@ -23,13 +26,33 @@
          (map (fn [x] (.plusSeconds now x)))
          (into []))))
 
-#_(-> (chime/periodic-seq (Instant/now) (Duration/ofMinutes 5))
-      rest)
+(defn- make-periodic-seq [interval]
+  (chime/periodic-seq
+   (Instant/now)
+   (Duration/ofSeconds interval)))
 
-(defn run []
+(defn init []
+  (reset! app
+          (delay (chime/chime-at
+                  (make-periodic-seq 3)
+                  exec
+                  {:on-finished
+                   (fn []
+                     (println "Bot finished."))}))))
+
+(comment
+  (init)
   (start)
-  (let [interval-seq (make-interval-seq 3 2)]
-    (chime/chime-at interval-seq
-                    exec
-                    {:on-finished stop})))
-#_(run)
+  (stop)
+  )
+
+(comment
+  (def state
+    (atom (-> (chime/periodic-seq
+               (Instant/now)
+               (Duration/ofSeconds 3))
+              exec)))
+
+  (.close @state)
+
+  )
