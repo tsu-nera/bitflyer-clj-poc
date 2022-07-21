@@ -10,4 +10,7 @@
 
   ;; xchange
   org.knowm.xchange/xchange-core     {:mvn/version "5.0.13"}
-  org.knowm.xchange/xchange-bitflyer {:mvn/version "5.0.13"}}}
+  org.knowm.xchange/xchange-bitflyer {:mvn/version "5.0.13"}
+
+  ;; bot
+  jarohen/chime {:mvn/version "0.3.3"}}}

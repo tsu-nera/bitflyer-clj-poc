@@ -127,14 +127,6 @@
 #_(fetch-orders)
 
 (comment
-  ;;
-  (dotimes [_ 3]
-    (println (fetch-tick))
-    (Thread/sleep 1000))
-  ;;
-  )
-
-(comment
 
   (def method "GET")
   (def path "/v1/me/getbalance")
