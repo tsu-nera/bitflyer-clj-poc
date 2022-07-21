@@ -30,7 +30,6 @@
   [timestamp method path & {:as params}]
   (let [key  (:api-secret creds)
         text (->signature-text timestamp method path params)]
-    (println text)
     (tool/sign key text)))
 
 (defn ->signed-headers [method path & {:as params}]
@@ -51,9 +50,15 @@
            :body
            (cske/transform-keys csk/->kebab-case)))))
 
-(defn get-private [path]
-  (let [headers (->signed-headers "GET" path)
+(defn path->with-query-string [path & {:as params}]
+  (cond-> path
+    params (str "?" (client/generate-query-string params))))
+
+(defn get-private [pathname & {:as params}]
+  (let [path    (path->with-query-string pathname params)
+        headers (->signed-headers "GET" path)
         url     (->url path)]
+    (println path url)
     (when-let [resp (client/get url
                                 {:headers       headers
                                  :as            :json
@@ -72,7 +77,7 @@
                                  {:headers       headers
                                   :body          body
                                   :content-type  :json
-                                  :accept        :json
+                                  :as            :json
                                   :cookie-policy :standard})]
       (->> resp
            :body
@@ -116,6 +121,12 @@
 
 (defn cancel-order [id symbol & params])
 
+(defn fetch-orders
+  "TODO オプションいろいろあるので用途ごとにラッパー関数を作成する"
+  [query-params]
+  (get-private "/v1/me/getchildorders" query-params))
+#_(fetch-orders)
+
 (comment
   ;;
   (dotimes [_ 3]
@@ -138,4 +149,12 @@
                    :content-type  :json
                    :cookie-policy :standard})
       :body)
+  )
+
+(comment
+
+  (def query-params {:a 1 :b 2})
+  (client/generate-query-string query-params)
+  (path->with-query-string "/v1/hoge" query-params)
+
   )

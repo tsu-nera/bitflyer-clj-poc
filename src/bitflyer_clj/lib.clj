@@ -4,14 +4,6 @@
 
 (def lot 0.001)
 
-(defn get-asset
-  "JPY残高を参照する関数"
-  [])
-
-(defn get-colla
-  "JPY証拠金を参照する関数"
-  [])
-
 (defn ->limit-price
   "TODO 板情報から実効bid/askを計算"
   [board]
@@ -30,6 +22,7 @@
         bid        (-> order-book :bids ->limit-price)
         spread     (->spread bid ask)]
     {:ask ask :bid bid :spread spread}))
+#_(get-eff-tick)
 
 (defn buy-market-order [amount price]
   (api/create-order "MARKET" "BUY" amount))
@@ -43,7 +36,7 @@
 (defn sell-limit-order [amount price]
   (api/create-order "LIMIT" "SELL" amount price))
 
-(defn cancel
+(defn cancel-order
   "注文キャンセル"
   [id])
 
