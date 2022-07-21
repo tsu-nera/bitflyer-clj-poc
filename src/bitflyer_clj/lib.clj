@@ -24,6 +24,30 @@
     {:ask ask :bid bid :spread spread}))
 #_(get-eff-tick)
 
+(defn get-order [id]
+  (when-let [resp (api/fetch-orders {"child_order_acceptance_id" id})]
+    (first resp)))
+#_(get-order "JRF20220720-110046-022548")
+
+(defn- ->status [child-order-state]
+  (case child-order-state
+    "ACTIVE"    "OPEN"
+    "COMPLETED" "CLOSED"
+    :else       child-order-state))
+
+(defn get-status [id]
+  (when-let [order (get-order id)]
+    (let [filled    (:executed-size order)
+          amount    (:size order)
+          remaining (- amount filled)]
+      {:id        id
+       :status    (->status (:child-order-state order))
+       :price     (:price order)
+       :amount    amount
+       :filled    filled
+       :remaining remaining})))
+#_(get-status "JRF20220720-110046-022548")
+
 (defn buy-market-order [amount price]
   (api/create-order "MARKET" "BUY" amount))
 

@@ -55,15 +55,16 @@
     params (str "?" (client/generate-query-string params))))
 
 (defn get-private [pathname & {:as params}]
-  (let [path    (path->with-query-string pathname params)
-        headers (->signed-headers "GET" path)
-        url     (->url path)]
+  (let [query-params (merge base-params params)
+        path         (path->with-query-string pathname query-params)
+        headers      (->signed-headers "GET" path)
+        url          (->url path)]
     (println path url)
     (when-let [resp (client/get url
-                                {:headers       headers
-                                 :as            :json
-                                 :content-type  :json
-                                 :debug         true
+                                {:headers      headers
+                                 :as           :json
+                                 :content-type :json
+
                                  :cookie-policy :standard})]
       (->> resp
            :body
@@ -123,7 +124,7 @@
 
 (defn fetch-orders
   "TODO オプションいろいろあるので用途ごとにラッパー関数を作成する"
-  [query-params]
+  [& query-params]
   (get-private "/v1/me/getchildorders" query-params))
 #_(fetch-orders)
 
