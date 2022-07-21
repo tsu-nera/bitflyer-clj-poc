@@ -59,7 +59,6 @@
         path         (path->with-query-string pathname query-params)
         headers      (->signed-headers "GET" path)
         url          (->url path)]
-    (println path url)
     (when-let [resp (client/get url
                                 {:headers      headers
                                  :as           :json
@@ -111,20 +110,19 @@
   (get-private "/v1/me/getcollateral"))
 #_(fetch-collateral)
 
-(defn create-order [type side amount price]
-  (let [path   "/v1/me/sendchildorder"
-        params {"product_code"     product-code
-                "child_order_type" type
-                "side"             side
-                "size"             amount
-                "price"            price}]
-    (post-private path params)))
+(defn create-order [params]
+  (let [path       "/v1/me/sendchildorder"
+        req-params (merge base-params params)]
+    (post-private path req-params)))
 
-(defn cancel-order [id symbol & params])
+(defn cancel-order [id]
+  (let [path       "/v1/me/cancelchildorder"
+        req-params (merge base-params {"child_order_acceptance_id" id})]
+    (post-private path req-params)))
 
 (defn fetch-orders
   "TODO オプションいろいろあるので用途ごとにラッパー関数を作成する"
-  [& query-params]
+  [& [query-params]]
   (get-private "/v1/me/getchildorders" query-params))
 #_(fetch-orders)
 

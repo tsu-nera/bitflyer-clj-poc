@@ -49,24 +49,32 @@
 #_(get-status "JRF20220720-110046-022548")
 
 (defn buy-market-order [amount price]
-  (api/create-order "MARKET" "BUY" amount))
+  (api/create-order
+   {"child_order_type" "MARKET"
+    "side"             "BUY"
+    "size"             amount
+    "price"            price}))
 
 (defn sell-market-order [amount price]
-  (api/create-order "MARKET" "SELL" amount price))
+  (api/create-order
+   {"child_order_type" "MARKET"
+    "side"             "SELL"
+    "size"             amount
+    "price"            price}))
 
 (defn buy-limit-order [amount price]
-  (api/create-order "LIMIT" "BUY" amount price))
+  (api/create-order
+   {"child_order_type" "LIMIT"
+    "side"             "BUY"
+    "size"             amount
+    "price"            price}))
 
 (defn sell-limit-order [amount price]
-  (api/create-order "LIMIT" "SELL" amount price))
-
-(defn cancel-order
-  "注文キャンセル"
-  [id])
-
-(defn get-status
-  "注文ステータス取得"
-  [id])
+  (api/create-order
+   {"child_order_type" "LIMIT"
+    "side"             "SELL"
+    "size"             amount
+    "price"            price}))
 
 (comment
 
@@ -83,4 +91,12 @@
   ;;
   (def sample-bid (->limit-price bids))
   (def resp (buy-limit-order lot sample-bid))
+  (def sample-ask (->limit-price asks))
+  (def resp (sell-limit-order lot sample-ask))
+
+  (def order-id (:child-order-acceptance-id resp))
+  (get-order order-id)
+
+  (def status (get-status order-id))
+  (api/cancel-order order-id)
   )
