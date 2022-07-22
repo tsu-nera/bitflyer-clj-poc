@@ -9,7 +9,9 @@
    (java.time
     Instant)))
 
-(def product-code "BTCJPY22JUL2022")
+(def product-code "BTCJPY05AUG2022")
+#_(def product-code "BTCJPY30SEP2022")
+#_(def product-code "FX_BTC_JPY")
 (def base-params {"product_code" product-code})
 
 (def base-url "https://api.bitflyer.com")
